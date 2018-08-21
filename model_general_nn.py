@@ -17,7 +17,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 from Swish import Swish
-
+from SplitModel import SplitModel
 
 from lossfnc_pnngaussian import PNNLoss_Gaussian
 
@@ -143,14 +143,16 @@ class GeneralNN(nn.Module):
                     nn.Linear(hidden_w, self.n_out)
                 )
             elif self.depth == 2:
+                print("Trying correct one!")
                 self.features = nn.Sequential(
-                    nn.Linear(self.n_in, hidden_w),
-                    Swish(self.B),
-                    nn.Dropout(p=self.d),
-                    nn.Linear(hidden_w, hidden_w),
-                    Swish(self.B),
-                    nn.Dropout(p=self.d),
-                    nn.Linear(hidden_w, self.n_out)
+                    #nn.Linear(self.n_in, hidden_w),
+                    #Swish(self.B),
+                    #nn.Dropout(p=self.d),
+                    #nn.Linear(hidden_w, hidden_w),
+                    #Swish(self.B),
+                    #nn.Dropout(p=self.d),
+                    #nn.Linear(hidden_w, self.n_out)
+                    SplitModel(self.n_in, self.n_out, int(self.n_out/2))
                 )
             elif self.depth == 3:
                 self.features = nn.Sequential(

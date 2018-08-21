@@ -1,11 +1,11 @@
-width = 150
+width = 200
 epochs = 50
 batch  = 32
 learning_rate = 7e-6
 prob = True
 data_name  = 'pink_long_hover_clean'
 
-using_premade_data = False
+using_premade_data = True
 old_model = False
 
 from dynamics import *
@@ -96,7 +96,10 @@ elif runType is RunType.CF:
   #Seqs_X, Seqs_U = loadcsv('_logged_data/crazyflie/hopping.csv')
   Seqs_X, Seqs_U = loadcsv('_logged_data/crazyflie/' + data_name + '.csv')
   data = np.concatenate([Seqs_X,Seqs_U],1)
+  print('data length : ', data.shape)
   data = data[data[:,3]!=0,:]
+  data = data[np.all(data != 0, axis=1)]
+  print('data length after : ', data.shape)
   print("Original data: ", data.shape)
   states = np.concatenate([data[:,1:3],data[:,4:6],data[:,7:8]], 1)
   #states = np.concatenate([data[:,4:6],data[:,7:8]], 1)
@@ -125,11 +128,10 @@ if len(Seqs_U.shape) < 3:
 print("Data : \n", Seqs_X, Seqs_U)
 np.savez('_simmed_data/testingfile_generalnn.npz', Seqs_X, Seqs_U)
 
-print('.... loading training data')
-npzfile = np.load('_simmed_data/testingfile_generalnn.npz')
-Seqs_X = npzfile['arr_0']
-Seqs_U = npzfile['arr_1']
-
+#print('.... loading training data')
+#npzfile = np.load('_simmed_data/testingfile_generalnn.npz')
+#Seqs_X = npzfile['arr_0']
+#Seqs_U = npzfile['arr_1']
 
 # converts data from list of trajectories of [next_states, states, inputs] to a large array of [next_states, states, inputs]
 # downsamples by a factor of samp. This is normalizing the differnece betweem dt_x and dt_measure
@@ -166,8 +168,8 @@ if not using_premade_data:
   np.savetxt('_logged_data/crazyflie/' + data_name + '-Seqs_U.csv', Seqs_U[0], delimiter=',')
 
 if using_premade_data:
-  Seqs_X = np.loadtxt(open('_logged_data/crazyflie/' + data_name + '-Seqs_X-new5.csv', 'r', encoding='utf-8'), delimiter=",", skiprows=1)
-  Seqs_U = np.loadtxt(open('_logged_data/crazyflie/' + data_name + '-Seqs_U-new.csv', 'r', encoding='utf-8'), delimiter=",", skiprows=1)
+  Seqs_X = np.loadtxt(open('_logged_data/crazyflie/' + data_name + '-SeqsX-clean.csv', 'r', encoding='utf-8'), delimiter=",", skiprows=1)
+  Seqs_U = np.loadtxt(open('_logged_data/crazyflie/' + data_name + '-Seqs_U-clean.csv', 'r', encoding='utf-8'), delimiter=",", skiprows=1)
   data = np.concatenate([Seqs_X,Seqs_U],1)
   Seqs_X = np.expand_dims(Seqs_X, axis=0)
   Seqs_U = np.expand_dims(Seqs_U, axis=0)
@@ -213,7 +215,7 @@ time.sleep(2)
 
 #print('Loading as new model')
 if old_model:
-  newNN = torch.load('_models/w-150e-95lr-7e-06b-64d-pinkp-True.pth')
+  newNN = torch.load('_models/2018-08-08 16:06:52.832524w-150e-50lr-7e-06b-32d-pink_long_hover_cleanp-True.pth')
 #if runType is RunType.CF:
   #acc2 = newNN2.train((Seqs_X, Seqs_U), learning_rate=2.5e-5, epochs=25, batch_size = 100, optim="Adam")
 #else:
@@ -273,21 +275,27 @@ for i in data:
 #plt.show()
 
 ypr = [0,1,2,3,4]
-ypr = [0,1,2]
+ypr = [0,1,2,3,4,5]
 
 plt.show()
 
 
 data = data[int(0.8*len(data)):]
-for i, datum in enumerate(data[:,0]):
-  data[i,0] = datum[:3]
+#for i, datum in enumerate(data[:,0]):
+#  data[i,0] = datum[:3]
 
 plot_model(data, newNN, 0, model_dims = ypr, delta=True, sort = False)
 plot_model(data, newNN, 1, model_dims = ypr, delta=True, sort = False)
 plot_model(data, newNN, 2, model_dims = ypr, delta=True, sort = False)
+plot_model(data, newNN, 3, model_dims = ypr, delta=True, sort = False)
+plot_model(data, newNN, 4, model_dims = ypr, delta=True, sort = False)
+plot_model(data, newNN, 5, model_dims = ypr, delta=True, sort = False)
 plot_model(data, newNN, 0, model_dims = ypr, delta=True, sort = True)
 plot_model(data, newNN, 1, model_dims = ypr, delta=True, sort = True)
 plot_model(data, newNN, 2, model_dims = ypr, delta=True, sort = True)
+plot_model(data, newNN, 3, model_dims = ypr, delta=True, sort = True)
+plot_model(data, newNN, 4, model_dims = ypr, delta=True, sort = True)
+plot_model(data, newNN, 5, model_dims = ypr, delta=True, sort = True)
 #plot_model(data[int(0.8*len(data)):], newNN, 3, model_dims = ypr, delta=True, sort = False)
 #plot_model(data[int(0.8*len(data)):], newNN, 4, model_dims = ypr, delta=True, sort = False)
 plt.show()
